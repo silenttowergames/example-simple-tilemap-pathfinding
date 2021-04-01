@@ -1,4 +1,4 @@
 #pragma once
 
-#define W 16
-#define H 12
+#define _W 16
+#define _H 12

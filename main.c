@@ -16,6 +16,9 @@ typedef struct PFInfo
 
 void drawMap(int* tiles, int start, int current, int finish)
 {
+    int W = _W;
+    int H = _H;
+    
     int currentTile;
     for(int Y = 0; Y < H; Y++)
     {
@@ -60,6 +63,9 @@ void drawMap(int* tiles, int start, int current, int finish)
 
 void fillPathValues(PFInfo* path, int* tiles, int start, int finish, int length)
 {
+    int W = _W;
+    int H = _H;
+    
     int startX;
     int startY;
     rtile(start, startX, startY);
@@ -104,6 +110,9 @@ int in_array(int v, int* array, int length)
 
 void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int finish, int length)
 {
+    int W = _W;
+    int H = _H;
+    
     int current = start;
     int X;
     int Y;
@@ -113,7 +122,7 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
     visited[1] = -1;
     int u = 1;
     
-    int tLength;
+    int tLength = 0;
     
     trail[0] = start;
     for(int i = 1; i < length; i++)
@@ -169,7 +178,8 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
         {
             assert(i >= 2);
             lowestTile = start;
-            u--;
+            
+            u = 0;
         }
         else
         {
@@ -186,7 +196,7 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
         
         if(current == finish)
         {
-            tLength = i + 1;
+            tLength = u + 1;
             
             break;
         }
@@ -241,6 +251,9 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
 
 int main()
 {
+    int W = _W;
+    int H = _H;
+    
     PFInfo path[W * H];
     memset(path, 0, sizeof(path));
     
@@ -248,9 +261,9 @@ int main()
     memset(trail, -1, sizeof(trail));
     
     int visited[W * H];
-    memset(trail, -1, sizeof(trail));
+    memset(visited, -1, sizeof(trail));
     
-    int tiles[W * H] = {
+    int tiles[_W * _H] = {
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
         1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1,
@@ -300,11 +313,12 @@ int main()
         current = trail[i];
         
         drawMap(tiles, start, current, finish);
-        printf("%d\n", i);
         
         getchar();
         system("clear");
     }
     
-    return 0;//
+    printf("Done!\n");
+    
+    return 0;
 }
