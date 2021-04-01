@@ -8,13 +8,6 @@
 #define tile(X, Y) (X + (W * (Y)))
 #define rtile(T, X, Y) { X = (int)T % W; Y = (int)floorf(T / W); }
 
-typedef struct PFInfo
-{
-    float toStart;
-    float toFinish;
-    float mix;
-} PFInfo;
-
 void drawMap(int* tiles, int start, int current, int finish)
 {
     int W = _W;
@@ -62,7 +55,7 @@ void drawMap(int* tiles, int start, int current, int finish)
     }
 }
 
-void fillPathValues(PFInfo* path, int* tiles, int start, int finish, int length)
+void fillPathValues(float* path, int* tiles, int start, int finish, int length)
 {
     int W = _W;
     int H = _H;
@@ -87,16 +80,18 @@ void fillPathValues(PFInfo* path, int* tiles, int start, int finish, int length)
         
         rtile(i, X, Y);
         
-        path[i].toStart = fmin(abs(startX - X), abs(startY - Y));
-        z = sqrtf(powf(path[i].toStart, 2) + powf(path[i].toStart, 2));
-        path[i].toStart = (fmax(abs(startX - X), abs(startY - Y))) - path[i].toStart + z;
+        float toStart;
+        float toFinish;
         
-        path[i].toFinish = fmin(abs(finishX - X), abs(finishY - Y));
-        z = sqrtf(powf(path[i].toFinish, 2) + powf(path[i].toFinish, 2));
-        path[i].toFinish = (fmax(abs(finishX - X), abs(finishY - Y))) - path[i].toFinish + z;
+        toStart = fmin(abs(startX - X), abs(startY - Y));
+        z = sqrtf(powf(toStart, 2) + powf(toStart, 2));
+        toStart = (fmax(abs(startX - X), abs(startY - Y))) - toStart + z;
         
-        path[i].mix = path[i].toStart + (path[i].toFinish * 1.1f);
-        //path[i].mix = path[i].toStart + path[i].toFinish;
+        toFinish = fmin(abs(finishX - X), abs(finishY - Y));
+        z = sqrtf(powf(toFinish, 2) + powf(toFinish, 2));
+        toFinish = (fmax(abs(finishX - X), abs(finishY - Y))) - toFinish + z;
+        
+        path[i] = toStart + (toFinish * 1.1f);
     }
 }
 
@@ -118,7 +113,7 @@ int in_array(int v, int* array, int length)
     return -1;
 }
 
-void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int finish, int length)
+void getTrail(int* trail, int* tiles, int* visited, float* path, int start, int finish, int length)
 {
     int W = _W;
     int H = _H;
@@ -145,9 +140,9 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
             // Up
             Y > 0 ? tile(X, Y - 1) : 0,
             // Up right
-            Y > 0 && X < W - 1 ? tile(X + 1, Y - 1) : 0,
+            //Y > 0 && X < W - 1 ? tile(X + 1, Y - 1) : 0,
             // Up left
-            Y > 0 && X > 0 ? tile(X - 1, Y - 1) : 0,
+            //Y > 0 && X > 0 ? tile(X - 1, Y - 1) : 0,
             // Left
             X > 0 ? tile(X - 1, Y) : 0,
             // Right
@@ -155,9 +150,9 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
             // Down
             Y < H - 1 ? tile(X, Y + 1) : 0,
             // Down right
-            Y < H - 1 && X < W - 1 ? tile(X + 1, Y + 1) : 0,
+            //Y < H - 1 && X < W - 1 ? tile(X + 1, Y + 1) : 0,
             // Down left
-            Y < H - 1 && X > 0 ? tile(X - 1, Y + 1) : 0,
+            //Y < H - 1 && X > 0 ? tile(X - 1, Y + 1) : 0,
         };
         
         float lowest;
@@ -169,10 +164,10 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
                 continue;
             }
             
-            if(lowestTile == -1 || path[dirs[j]].mix < lowest)
+            if(lowestTile == -1 || path[dirs[j]] < lowest)
             {
                 lowestTile = dirs[j];
-                lowest = path[dirs[j]].mix;
+                lowest = path[dirs[j]];
             }
         }
         
@@ -196,6 +191,10 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
         
         current = lowestTile;
         
+        drawMap(tiles, start, current, finish);
+        getchar();
+        system("clear");
+        
         if(in_array(lowestTile, visited, W * H) == -1)
         {
             visited[v] = lowestTile;
@@ -217,7 +216,7 @@ int main()
     int W = _W;
     int H = _H;
     
-    PFInfo path[W * H];
+    float path[W * H];
     memset(path, 0, sizeof(path));
     
     int trail[W * H];
