@@ -1,1 +1,1 @@
-gcc -g main.c -lm -o main && ./main
+gcc -g *.c -lm -o main && ./main
