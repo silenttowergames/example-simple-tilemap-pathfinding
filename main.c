@@ -12,6 +12,7 @@ typedef struct PFInfo
 {
     float toStart;
     float toFinish;
+    float mix;
 } PFInfo;
 
 void drawMap(int* tiles, int start, int current, int finish)
@@ -76,6 +77,7 @@ void fillPathValues(PFInfo* path, int* tiles, int start, int finish, int length)
     
     int X;
     int Y;
+    float z;
     for(int i = 0; i < length; i++)
     {
         if(tiles[i] != 0)
@@ -85,8 +87,16 @@ void fillPathValues(PFInfo* path, int* tiles, int start, int finish, int length)
         
         rtile(i, X, Y);
         
-        path[i].toStart = sqrtf(abs(powf(startX - X, 2)) + abs(powf(startY - Y, 2)));
-        path[i].toFinish = sqrtf(abs(powf(finishX - X, 2)) + abs(powf(finishY - Y, 2)));
+        path[i].toStart = fmin(abs(startX - X), abs(startY - Y));
+        z = sqrtf(powf(path[i].toStart, 2) + powf(path[i].toStart, 2));
+        path[i].toStart = (fmax(abs(startX - X), abs(startY - Y))) - path[i].toStart + z;
+        
+        path[i].toFinish = fmin(abs(finishX - X), abs(finishY - Y));
+        z = sqrtf(powf(path[i].toFinish, 2) + powf(path[i].toFinish, 2));
+        path[i].toFinish = (fmax(abs(finishX - X), abs(finishY - Y))) - path[i].toFinish + z;
+        
+        path[i].mix = path[i].toStart + (path[i].toFinish * 1.1f);
+        //path[i].mix = path[i].toStart + path[i].toFinish;
     }
 }
 
@@ -121,6 +131,8 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
     visited[0] = start;
     visited[1] = -1;
     int u = 1;
+    int v = 0;
+    int vu = 0;
     
     int tLength = 0;
     
@@ -147,16 +159,6 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
             // Down left
             Y < H - 1 && X > 0 ? tile(X - 1, Y + 1) : 0,
         };
-        const char* dirsS[8] = {
-            "Up",
-            "Up right",
-            "Up left",
-            "Left",
-            "Right",
-            "Down",
-            "Down right",
-            "Down left",
-        };
         
         float lowest;
         int lowestTile = -1;
@@ -167,19 +169,24 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
                 continue;
             }
             
-            if(lowestTile == -1 || path[dirs[j]].toFinish < lowest)
+            if(lowestTile == -1 || path[dirs[j]].mix < lowest)
             {
                 lowestTile = dirs[j];
-                lowest = path[dirs[j]].toFinish;
+                lowest = path[dirs[j]].mix;
             }
         }
         
         if(lowestTile == -1)
         {
             assert(i >= 2);
-            lowestTile = start;
+            u--;
+            vu--;
+            int vi = vu;
+            lowestTile = visited[vi];
             
-            u = 0;
+            int vX;
+            int vY;
+            rtile(lowestTile, vX, vY);
         }
         else
         {
@@ -191,7 +198,9 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
         
         if(in_array(lowestTile, visited, W * H) == -1)
         {
-            visited[i] = lowestTile;
+            visited[v] = lowestTile;
+            v++;
+            vu = v;
         }
         
         if(current == finish)
@@ -200,52 +209,6 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
             
             break;
         }
-    }
-    
-    // Fix trail
-    
-    int oldX;
-    int oldY;
-    int cX;
-    int cY;
-    
-    for(int i = 0; i < length; i++)
-    {
-        if(trail[i] == -1)
-        {
-            break;
-        }
-        
-        rtile(trail[i], X, Y);
-        
-        // Get rid of gaps
-        if(i > 0 && (abs(oldX - X) > 1 || abs(oldY - Y) > 1))
-        {
-            int j;
-            for(j = 0; j < i; j++)
-            {
-                rtile(trail[j], cX, cY);
-                
-                if(abs(cX - X) <= 1 && abs(cY - X) <= 1)
-                {
-                    memcpy(&trail[j + 1], &trail[i], sizeof(int) * length - i + 1);
-                    
-                    if(tLength < length)
-                    {
-                        trail[length - i + 1] = -1;
-                    }
-                    
-                    break;
-                }
-            }
-            
-            i = j + 1;
-            
-            continue;
-        }
-        
-        oldX = X;
-        oldY = Y;
     }
 }
 
@@ -285,23 +248,6 @@ int main()
     fillPathValues(path, tiles, start, finish, W * H);
     
     getTrail(trail, tiles, visited, path, start, finish, W * H);
-    
-    /*
-    int tX;
-    int tY;
-    for(int i = 0; i < W * H; i++)
-    {
-        if(trail[i] == -1)
-        {
-            break;
-        }
-        
-        rtile(trail[i], tX, tY);
-        
-        printf("%d:%dx%d ", i, tX, tY);
-    }
-    printf("\n");
-    //*/
     
     for(int i = 0; i < W * H; i++)
     {
