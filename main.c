@@ -153,16 +153,13 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
         int lowestTile = -1;
         for(int j = 0; j < sizeof(dirs) / sizeof(int); j++)
         {
-            printf("%d:%dx%d: dirs[%d] = %d\n", current, X, Y, j, dirs[j]);
             if(dirs[j] == 0 || tiles[dirs[j]] != 0 || (in_array(dirs[j], visited, length) != -1))
             {
                 continue;
             }
             
-            printf("%f\n", path[dirs[j]].toFinish);
             if(lowestTile == -1 || path[dirs[j]].toFinish < lowest)
             {
-                //printf("%d: j = %d ? `%s`\n", i, j, dirsS[j]);
                 lowestTile = dirs[j];
                 lowest = path[dirs[j]].toFinish;
             }
@@ -186,13 +183,6 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
         {
             visited[i] = lowestTile;
         }
-        
-        /*
-        drawMap(tiles, start, current, finish);
-        printf("%d\n", i);
-        getchar();
-        system("clear");
-        //*/
         
         if(current == finish)
         {
@@ -221,7 +211,6 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
         // Get rid of gaps
         if(i > 0 && (abs(oldX - X) > 1 || abs(oldY - Y) > 1))
         {
-            printf("Gap between %dx%d and %dx%d\n", oldX, oldY, X, Y);
             int j;
             for(j = 0; j < i; j++)
             {
@@ -229,8 +218,6 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
                 
                 if(abs(cX - X) <= 1 && abs(cY - X) <= 1)
                 {
-                    printf("found it: %d:%dx%d %d:%dx%d\n", j, cX, cY, i, X, X);
-                    
                     memcpy(&trail[j + 1], &trail[i], sizeof(int) * length - i + 1);
                     
                     if(tLength < length)
@@ -247,37 +234,9 @@ void getTrail(int* trail, int* tiles, int* visited, PFInfo* path, int start, int
             continue;
         }
         
-        // Get rid of roundabouts
-        /*
-        if(i > 0)
-        {
-            for(int j = 0; j < i - 2; i++)
-            {
-                rtile(trail[j], cX, cY);
-                
-                if(abs(cX - X) <= 1 && abs(cY - X) <= 1)
-                {
-                    printf("Roundabout between %dx%d and %dx%d\n", cX, cY, X, Y);
-                    
-                    memcpy(&trail[j + 1], &trail[i], sizeof(int) * length - i + 1);
-                    
-                    if(tLength < length)
-                    {
-                        trail[length - i + 1] = -1;
-                    }
-                    
-                    break;
-                }
-            }
-        }
-        //*/
-        
         oldX = X;
         oldY = Y;
     }
-    
-    getchar();
-    system("clear");
 }
 
 int main()
@@ -292,35 +251,19 @@ int main()
     memset(trail, -1, sizeof(trail));
     
     int tiles[W * H] = {
-        /*
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1,
-        1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1,
-        1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1,
-        1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1,
-        1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1,
-        1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
-        1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        //*/
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
         1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1,
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     };
-    
-    //printf("Hello, World! %d %d\n", W, H);
     
     const int start = tile(1, 1);
     const int finish = tile(14, 10);
@@ -330,7 +273,7 @@ int main()
     
     getTrail(trail, tiles, visited, path, start, finish, W * H);
     
-    //*
+    /*
     int tX;
     int tY;
     for(int i = 0; i < W * H; i++)
