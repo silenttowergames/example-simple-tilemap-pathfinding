@@ -5,20 +5,17 @@
 #include <string.h>
 #include "dimensions.h"
 
-#define tile(X, Y) (X + (W * (Y)))
-#define rtile(T, X, Y) { X = (int)T % W; Y = (int)floorf(T / W); }
+#define EPF_tile(X, Y) (X + (W * (Y)))
+#define EPF_rtile(T, X, Y) { X = (int)T % W; Y = (int)floorf(T / W); }
 
-void drawMap(int* tiles, int start, int current, int finish)
+void EPF_drawMap(int* tiles, int start, int current, int finish, int W, int H)
 {
-    int W = _W;
-    int H = _H;
-    
     int currentTile;
     for(int Y = 0; Y < H; Y++)
     {
         for(int X = 0; X < W; X++)
         {
-            currentTile = tile(X, Y);
+            currentTile = EPF_tile(X, Y);
             
             if(currentTile == start)
             {
@@ -55,18 +52,17 @@ void drawMap(int* tiles, int start, int current, int finish)
     }
 }
 
-void fillPathValues(float* path, int* tiles, int start, int finish, int length)
+void EPF_fillPathValues(float* path, int* tiles, int start, int finish, int W, int H)
 {
-    int W = _W;
-    int H = _H;
+    int length = W * H;
     
     int startX;
     int startY;
-    rtile(start, startX, startY);
+    EPF_rtile(start, startX, startY);
     
     int finishX;
     int finishY;
-    rtile(finish, finishX, finishY);
+    EPF_rtile(finish, finishX, finishY);
     
     int X;
     int Y;
@@ -78,7 +74,7 @@ void fillPathValues(float* path, int* tiles, int start, int finish, int length)
             continue;
         }
         
-        rtile(i, X, Y);
+        EPF_rtile(i, X, Y);
         
         float toStart;
         float toFinish;
@@ -95,7 +91,7 @@ void fillPathValues(float* path, int* tiles, int start, int finish, int length)
     }
 }
 
-int in_array(int v, int* array, int length)
+int EPF_in_array(int v, int* array, int length)
 {
     for(int i = 0; i < length; i++)
     {
@@ -113,11 +109,9 @@ int in_array(int v, int* array, int length)
     return -1;
 }
 
-void getTrail(int* trail, int* tiles, int* visited, float* path, int start, int finish, int length)
+void EPF_getTrail(int* trail, int* tiles, int* visited, float* path, int start, int finish, int W, int H)
 {
-    int W = _W;
-    int H = _H;
-    
+    int length = W * H;
     int current = start;
     int X;
     int Y;
@@ -134,32 +128,32 @@ void getTrail(int* trail, int* tiles, int* visited, float* path, int start, int 
     trail[0] = start;
     for(int i = 1; i < length; i++)
     {
-        rtile(current, X, Y);
+        EPF_rtile(current, X, Y);
         
         int dirs[8] = {
             // Up
-            Y > 0 ? tile(X, Y - 1) : 0,
+            Y > 0 ? EPF_tile(X, Y - 1) : 0,
             // Up right
-            //Y > 0 && X < W - 1 ? tile(X + 1, Y - 1) : 0,
+            //Y > 0 && X < W - 1 ? EPF_tile(X + 1, Y - 1) : 0,
             // Up left
-            //Y > 0 && X > 0 ? tile(X - 1, Y - 1) : 0,
+            //Y > 0 && X > 0 ? EPF_tile(X - 1, Y - 1) : 0,
             // Left
-            X > 0 ? tile(X - 1, Y) : 0,
+            X > 0 ? EPF_tile(X - 1, Y) : 0,
             // Right
-            X < W - 1 ? tile(X + 1, Y) : 0,
+            X < W - 1 ? EPF_tile(X + 1, Y) : 0,
             // Down
-            Y < H - 1 ? tile(X, Y + 1) : 0,
+            Y < H - 1 ? EPF_tile(X, Y + 1) : 0,
             // Down right
-            //Y < H - 1 && X < W - 1 ? tile(X + 1, Y + 1) : 0,
+            //Y < H - 1 && X < W - 1 ? EPF_tile(X + 1, Y + 1) : 0,
             // Down left
-            //Y < H - 1 && X > 0 ? tile(X - 1, Y + 1) : 0,
+            //Y < H - 1 && X > 0 ? EPF_tile(X - 1, Y + 1) : 0,
         };
         
         float lowest;
         int lowestTile = -1;
         for(int j = 0; j < sizeof(dirs) / sizeof(int); j++)
         {
-            if(dirs[j] == 0 || tiles[dirs[j]] != 0 || (in_array(dirs[j], visited, length) != -1))
+            if(dirs[j] == 0 || tiles[dirs[j]] != 0 || (EPF_in_array(dirs[j], visited, length) != -1))
             {
                 continue;
             }
@@ -181,7 +175,7 @@ void getTrail(int* trail, int* tiles, int* visited, float* path, int start, int 
             
             int vX;
             int vY;
-            rtile(lowestTile, vX, vY);
+            EPF_rtile(lowestTile, vX, vY);
         }
         else
         {
@@ -191,11 +185,7 @@ void getTrail(int* trail, int* tiles, int* visited, float* path, int start, int 
         
         current = lowestTile;
         
-        drawMap(tiles, start, current, finish);
-        getchar();
-        system("clear");
-        
-        if(in_array(lowestTile, visited, W * H) == -1)
+        if(EPF_in_array(lowestTile, visited, W * H) == -1)
         {
             visited[v] = lowestTile;
             v++;
@@ -240,13 +230,13 @@ int main()
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     };
     
-    const int start = tile(1, 1);
-    const int finish = tile(14, 10);
+    const int start = EPF_tile(1, 1);
+    const int finish = EPF_tile(14, 10);
     int current;
     
-    fillPathValues(path, tiles, start, finish, W * H);
+    EPF_fillPathValues(path, tiles, start, finish, W, H);
     
-    getTrail(trail, tiles, visited, path, start, finish, W * H);
+    EPF_EPF_getTrail(trail, tiles, visited, path, start, finish, W, H);
     
     for(int i = 0; i < W * H; i++)
     {
@@ -257,7 +247,7 @@ int main()
         
         current = trail[i];
         
-        drawMap(tiles, start, current, finish);
+        EPF_drawMap(tiles, start, current, finish, W, H);
         
         getchar();
         system("clear");
